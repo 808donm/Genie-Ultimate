@@ -1,120 +1,47 @@
 // src/app/api/genie/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import type { GenieResponse } from "@/types/genie";
+// Import the REAL Orchestrator logic we just built
+import { callOrchestrator } from "@/genies/orchestrator"; 
 
-// TODO: replace this with a real call into your orchestratorGenie.js
-async function callOrchestratorBackend(payload: any): Promise<GenieResponse> {
-  // For now, this is a stub. You will:
-  // - Either call your existing Node backend over HTTP
-  // - Or import orchestratorGenie logic directly if you merge repos
-
-  console.warn("callOrchestratorBackend is using stub data. Wire this to orchestratorGenie.");
-  
-  // LOGGING: Verify the ID is making it this far
-  if (payload.locationId) {
-    console.log("Received Location ID:", payload.locationId);
-  }
-
-  return {
-    lead_magnet: {
-      title: "Stub Lead Magnet",
-      subtitle: "This is a stubbed lead magnet. Wire me to the backend.",
-      target_audience: payload.client.targetAudience, // Updated to match payload structure
-      problem: "Example problem",
-      solution: "Example solution",
-      sections: [
-        { heading: "Section 1", content: "Example content." }
-      ],
-      slug: "stub-lead-magnet",
-      markdown: "# Stub Lead Magnet\n\nReplace this by wiring the API to your orchestrator."
-    },
-    offer: {
-      big_idea: "Stub Big Idea",
-      hook: "Stub Hook",
-      core_offer: "Stub Core Offer",
-      value_stack: ["Benefit 1", "Benefit 2"],
-      bonuses: ["Bonus 1"],
-      guarantee: "Stub guarantee",
-      cta: "Click here",
-      slug: "stub-offer"
-    },
-    funnel: {
-      funnel_name: "Stub Funnel",
-      slug: "stub-funnel",
-      pages: [],
-      event: {}
-    },
-    workflow_build_guide: {
-      title: "Stub Workflow Guide",
-      summary: "This is a stub workflow guide. Wire it to Funnel Genie.",
-      ghl_area: "Workflows",
-      estimated_time_minutes: 20,
-      steps: [
-        {
-          step_number: 1,
-          step_title: "Create Workflow Shell",
-          ghl_navigation: "Automations → Workflows → Create Workflow",
-          goal: "Set up the shell for this lead magnet workflow.",
-          instructions: "In GHL, go to Automations → Workflows → Create Workflow and name it appropriately.",
-          checklist: [
-            "Workflow created",
-            "Correct location selected"
-          ]
-        }
-      ],
-      full_markdown: "# Stub Workflow Guide\n\nReplace this with real Funnel Genie output."
-    },
-    posts: [
-      {
-        platform: "facebook",
-        primary_post: "Stub Facebook post.",
-        comments: ["Nice!", "Looks good."],
-        image_prompt: "Stub image prompt"
-      }
-    ]
-  };
-}
+export const maxDuration = 60; // Allow 60 seconds for GPT-4 to think (Vercel specific)
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // 1. EXTRACT locationId FROM BODY
-    const {
-      businessName,
-      niche,
-      targetAudience,
-      leadMagnetType,
-      platforms,
-      locationId // <--- Added here
-    } = body;
+    // 1. Extract inputs
+    const { message, locationId, state } = body;
 
-    if (!businessName || !targetAudience || !leadMagnetType) {
-      return NextResponse.json(
-        { error: "Missing required fields." },
-        { status: 400 }
-      );
+    // 2. Validate
+    if (!message) {
+      return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
-    // 2. PASS locationId INTO PAYLOAD
-    const payload = {
-      client: {
-        businessName,
-        niche,
-        targetAudience,
-      },
-      leadMagnetType,
-      platforms,
-      locationId, // <--- Added here so the backend receives it
-    };
+    // 3. Prepare State
+    // We inject the locationId into the state so the Orchestrator passes it to the Post Genie
+    const previousState = state || {};
+    
+    // Ensure GHL context is available
+    if (locationId) {
+      previousState.ghl = { 
+        ...previousState.ghl, 
+        location_id: locationId 
+      };
+    }
 
-    const data = await callOrchestratorBackend(payload);
+    console.log("🤖 Orchestrator received:", message);
+    console.log("📍 Location ID:", locationId);
 
-    return NextResponse.json(data);
+    // 4. Call the Genie (The Brain)
+    const response = await callOrchestrator(message, previousState);
+
+    // 5. Return the result to the Frontend
+    return NextResponse.json(response);
+
   } catch (err: any) {
-    console.error("Error in /api/genie:", err);
+    console.error("❌ API Error:", err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: err.message || "Internal Server Error" },
       { status: 500 }
     );
   }
