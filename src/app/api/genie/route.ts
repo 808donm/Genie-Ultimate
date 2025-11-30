@@ -9,12 +9,17 @@ async function callOrchestratorBackend(payload: any): Promise<GenieResponse> {
   // - Or import orchestratorGenie logic directly if you merge repos
 
   console.warn("callOrchestratorBackend is using stub data. Wire this to orchestratorGenie.");
+  
+  // LOGGING: Verify the ID is making it this far
+  if (payload.locationId) {
+    console.log("Received Location ID:", payload.locationId);
+  }
 
   return {
     lead_magnet: {
       title: "Stub Lead Magnet",
       subtitle: "This is a stubbed lead magnet. Wire me to the backend.",
-      target_audience: payload.targetAudience,
+      target_audience: payload.client.targetAudience, // Updated to match payload structure
       problem: "Example problem",
       solution: "Example solution",
       sections: [
@@ -74,13 +79,14 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Validate minimal fields
+    // 1. EXTRACT locationId FROM BODY
     const {
       businessName,
       niche,
       targetAudience,
       leadMagnetType,
-      platforms
+      platforms,
+      locationId // <--- Added here
     } = body;
 
     if (!businessName || !targetAudience || !leadMagnetType) {
@@ -90,6 +96,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 2. PASS locationId INTO PAYLOAD
     const payload = {
       client: {
         businessName,
@@ -98,6 +105,7 @@ export async function POST(req: NextRequest) {
       },
       leadMagnetType,
       platforms,
+      locationId, // <--- Added here so the backend receives it
     };
 
     const data = await callOrchestratorBackend(payload);

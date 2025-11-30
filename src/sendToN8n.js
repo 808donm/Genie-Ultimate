@@ -45,3 +45,49 @@ export async function sendFunnelToN8n(funnelResult) {
     throw err;
   }
 }
+import dotenv from "dotenv";
+dotenv.config();
+
+// ... existing sendFunnelToN8n code ...
+
+/**
+ * Send Post Campaign JSON to n8n for Image Gen & Scheduling.
+ * @param {object} campaignResult - The full output from Post Genie.
+ * @param {string} locationId - The GHL Location ID to post to.
+ */
+export async function sendPostToN8n(campaignResult, locationId) {
+  const url = process.env.N8N_POST_WEBHOOK_URL;
+
+  console.log("\n[sendPostToN8n] Target URL:", url);
+
+  if (!url) {
+    throw new Error("N8N_POST_WEBHOOK_URL is missing in .env");
+  }
+
+  // Construct the payload expected by our new n8n workflow
+  const payload = {
+    location_id: locationId,
+    campaign: campaignResult.campaign // The nested campaign object
+  };
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`n8n Post Genie error: ${res.status} - ${text}`);
+    }
+
+    console.log("✅ Successfully dispatched Post Campaign to n8n.");
+    return true;
+  } catch (err) {
+    console.error("❌ Failed to send to n8n:", err);
+    // We don't throw here to avoid crashing the chat UI if automation fails
+    return false;
+  }
+ }
+
