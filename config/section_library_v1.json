@@ -1,0 +1,62 @@
+{
+  "version": "1.0",
+  "section_types": {
+    "title_section": {},
+    "hero_section": {},
+    "story_section": {},
+    "problem_agitation_section": {},
+    "solution_intro_section": {},
+    "lead_magnet_tease_section": {},
+    "credibility_section": {},
+    "recap_benefits_section": {},
+    "form_section": {},
+    "cta_section": {},
+    "soft_cta_section": {},
+    "privacy_reassurance_section": {},
+    "delivery_instructions_section": {},
+    "event_intro_section": {},
+    "event_cta_section": {},
+    "next_steps_section": {},
+    "social_proof_section": {},
+    "faq_section": {},
+    "footer_section": {}
+  },
+  "canonical_layouts": {
+    "storyboard": [
+      "title_section",
+      "hero_section",
+      "story_section",
+      "problem_agitation_section",
+      "solution_intro_section",
+      "credibility_section",
+      "lead_magnet_tease_section",
+      "soft_cta_section"
+    ],
+    "form": [
+      "title_section",
+      "recap_benefits_section",
+      "form_section",
+      "cta_section",
+      "privacy_reassurance_section"
+    ],
+    "thank_you": [
+      "title_section",
+      "delivery_instructions_section",
+      "event_intro_section",
+      "event_cta_section",
+      "next_steps_section",
+      "social_proof_section",
+      "faq_section"
+    ]
+  },
+  "section_object_shape": {
+    "section_type": "string_required",
+    "title": "string_optional",
+    "body": "string_optional",
+    "bullets": "array_of_strings_optional",
+    "cta_label": "string_optional",
+    "cta_target": "string_optional",
+    "image_prompt": "string_optional"
+  }
+}
+

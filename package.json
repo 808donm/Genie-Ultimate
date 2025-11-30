@@ -1,0 +1,15 @@
+{
+  "name": "genie-ultimate",
+  "version": "1.0.0",
+  "description": "Multi-genie orchestration system using OpenAI API, n8n, and GoHighLevel.",
+  "main": "src/devTest.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node src/devTest.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.0",
+    "node-fetch": "^3.3.2",
+    "openai": "^4.57.0"
+  }
+}
